@@ -10,19 +10,63 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers;
+  const user = users.find(user => user.username == username);
+
+  if(!user){
+    return response.status(400).json({ error: 'USERNAME_NOT_FOUND' });
+  }
+  
+  request.user = user;
+
+  next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request;
+
+  if(user.pro = false && user.todos.length > 10){
+    return response.status(400).json({ error: 'USERNAME_NOT_FOUND' });
+  }
+
+  next();
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers;
+  const { id }  = request.params;
+
+  const user = users.find(user => user.username == username);
+
+  if(!user){
+    return response.status(400).json({ error: 'USERNAME_NOT_FOUND' });
+  }
+  if(validate(id) === false){
+    return response.status(400).json({ error: 'ID_MALFORMATED' });
+  }
+
+  const checkTodoExistInUser = user.todos.find(todo => todo.id == id);
+
+  if(!checkTodoExistInUser){
+    return response.status(400).json({ error: 'ID_NOT_FOUND' });
+  }
+  request.todo = checkTodoExistInUser;
+  request.user = username;
+  next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id }  = request.params;
+
+  const user = users.find(user => user.id === id);
+  console.log(user);
+  if(!user){
+    return response.status(400).json({ error: 'ID_NOT_FOUND' });
+  }
+
+  request.user = user;
+  next()
+
 }
 
 app.post('/users', (request, response) => {
@@ -103,7 +147,7 @@ app.patch('/todos/:id/done', checksTodoExists, (request, response) => {
 
   todo.done = true;
 
-  return response.json(todo);
+  return response.json(todo); 
 });
 
 app.delete('/todos/:id', checksExistsUserAccount, checksTodoExists, (request, response) => {
